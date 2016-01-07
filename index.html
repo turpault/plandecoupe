@@ -17,13 +17,16 @@
   </head>
   <body class="enyo-unselectable">
   <div class="form">
-  <p class="form-title">Parametres</p>
+  <p class="form-title">Taille du Tissus</p>
   <p class="form-field"  > 
     <span class="form-item">Largeur</span><input ng-change="changeConfig()" ng-model="config.width" type="number" style="text-align:right;width:50px;" id="width" value="62"/> <br>
-    <span class="form-item">Hauteur</span><input ng-change="changeConfig()" ng-model="config.height" type="number" style="text-align:right;width:50px;" id="height" value="260"/> <br>
-    <span class="form-item">Direction</span><select ng-change="changeConfig()" ng-model="config.direction" id="direction"> <option value="w">Largeur</option><option value="h">Hauteur</option></select> <br>
-    <span class="form-item">Unites</span><select ng-change="changeConfig()" ng-model="config.units" id="units"> <option value="i">Impérialles</option><option value="m">Métriques</option></select> <br>
-    <span class="form-item">Snap</span><input  ng-change="changeConfig()" ng-model="config.snap" type="checkbox">Snapper aux coins</input> <br>
+    <span class="form-item">Longueur</span><input ng-change="changeConfig()" ng-model="config.height" type="number" style="text-align:right;width:50px;" id="height" value="260"/> <br>
+    <span class="form-item">Direction</span><select ng-change="changeConfig()" ng-model="config.direction" id="direction"> <option value="w">Sur le rouleau</option><option value="h">Railroad</option></select> <br>
+    <span class="form-item">Unites</span><select ng-change="changeConfig()" ng-model="config.units" id="units"> <option value="i">Impériales</option><option value="m">Métriques</option></select> <br>
+  </p>
+  <p class="form-title">Options</p>
+  <p class="form-field"  > 
+    <span class="form-item">Aimant</span><input  ng-change="changeConfig()" ng-model="config.snap" type="checkbox"></input> <br>
     <span class="form-item">Zoom</span><select ng-change="changeConfig()" ng-model="config.zoom" > 
       <option value="1">100%</option>
       <option value="2">200%</option>
@@ -32,20 +35,21 @@
       <option value="Fit">Tout</option>
     </select> 
   </p>
-  <p > 
-    <label class="form-item">Pieces</label> 
-    <button ng-click="addPiece()">+</button>
-  <table >
-    <thead><th>Nom</th><th>Largeur</th><th>Hauteur</th><th>Nombre</th><th/><thead>
-    <tr ng-repeat="piece in pieces">
-    <td><input style="width:50px" ng-change="changePiece()" ng-model="piece.name"</td>
-    <td><input style="width:50px" ng-change="changePiece()"  ng-model="piece.width"</td>
-    <td><input style="width:50px" ng-change="changePiece()" ng-model="piece.height"</td>
-    <td><input style="width:50px" ng-change="changePiece()" ng-model="piece.count"</td>
-    <td><button  ng-click="removePiece($index)">-</button></td>
-    </tr> 
-  </table>
-  <button ng-click="placeAll()";">Dessiner le Plan de coupe</button>
+  <p class="form-title">Pièces à placer</p>
+  <div class="form-field"> 
+    <table class="form-item" >
+      <thead><th>Nom</th><th>Largeur</th><th>Hauteur</th><th>Nb</th><th/><thead>
+      <tr ng-repeat="piece in pieces">
+      <td><input style="width:50px" ng-change="changePiece()" ng-model="piece.name"</td>
+      <td><input style="width:50px" type="number" ng-change="changePiece()"  ng-model="piece.width"</td>
+      <td><input style="width:50px" type="number" ng-change="changePiece()" ng-model="piece.height"</td>
+      <td><input style="width:20px" type="number" ng-change="changePiece()" ng-model="piece.count"</td>
+      <td><button  ng-click="removePiece($index)">-</button></td>
+      </tr> 
+    </table>
+    <button class="form-item" ng-click="addPiece()">+</button>
+    <button ng-click="placeAll()">Dessiner le Plan de coupe</button>
+  </div>
   </div>
   <h1>Plan de coupe {{config.width}}x{{config.height}}</h1>
   <div id="div1" style="border-style: solid; width: 900px; height: 500px; overflow: auto;">
