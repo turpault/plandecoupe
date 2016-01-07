@@ -1,159 +1,56 @@
 <!DOCTYPE html>
-<html>
+<html ng-app="plandecoupe" ng-controller="Config">
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>{album}</title>
-    <link rel="shortcut icon" href="{icon}"/>
     <!-- -->
     <meta http-equiv="Content-Type" content="text/html; charset=utf8"/>
     <!-- js -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
     <script src="addflow/addflow.js" charset="utf-8"></script>
+    <script src="plandecoupe.js"></script>
+    <script src="fit.js"></script>
+    <script src="utilities.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/packery/1.4.3/packery.pkgd.js"></script>
     <script src="http://underscorejs.org/underscore-min.js"></script>
-    <script charset="utf-8">
-    function run() {
-      function d(l) { return l*10;};
-      var w=62, pieces=[
-        {n:"BP", w:33, h:23},
-        {n:"FE", w:33, h:14.5},
-        {n:"BI", w:36, h:27, c:2},
-        {n:"BE", w:40, h:31, c:2},
-        {n:"Bande", w:4, h:65, c:2},
-        {n:"DI", w:35, h:34},
-        {n:"DE", w:36, h:31}
-      ];
-
-      var canvas = document.getElementById('canvas');
-      var f = new Lassalle.Flow(canvas);
-      // Create the PlanDeCoupe shape
-      var offset=10;
-      f.nodeModel.shapeFamily = "rectangle";
-
-      var realpieces_width = [];
-      pieces.forEach(function(p) { 
-        for(var i = 0; i<(p.c||1);i++) { realpieces_width.push(_.clone(p));}
-      });
-      realpieces_width.forEach(function(p,idx) { p.id=idx;});
-      var realpieces_height = cloneArray(realpieces_width);
-      var stats = {d:"y", dw:"w"};
-      var chunks = [{x:0, y:0, w:1000,h:64}];
-      realpieces_width.sort(function(a,b) {
-        return b[stats.dw]-a[stats.dw];  
-      });
-
-      var fdraw = function draw(chunks, pieces) {
-       f.beginUpdate(); 
-       f.clear();     
-       f.nodeModel.strokeWidth=0;
-
-       //f.addNode(d(offset), d(offset), d(w), d(200), "Plan de coupe");
-       f.nodeModel.gradientFillStyle = f.nodeModel.fillStyle = 'yellow';
-       chunks.forEach(function(p) {
-         var n = f.addNode(d(offset+p.x), d(offset+p.y), d(p.w), d(p.h));  
-
-       });
-       f.nodeModel.gradientFillStyle = f.nodeModel.fillStyle = 'lightblue';
-       pieces.forEach(function(p) {
-         f.addNode(d(offset+p.x), d(offset+p.y), d(p.w), d(p.h), 
-           p.n+"\r\n"+p.w+"x"+p.h+"\r\npos:"+p.x+","+p.y);  
-       });       
-       f.endUpdate();
-      };
-
-      performPlacement(realpieces_width, chunks, stats, [],0, ">", fdraw);
-
-
-
-      function cloneArray(a) { return a.map(_.clone);}
-      function addCnt(stats, current) {
-        stats.count=(stats.count||0)+1;
-        if((stats.count%1000) ==0) {
-           console.log(stats.count,"placements tested",current);
-        }       
-        if(stats.count>1000000)
-          stats.stop=true;
-      }
-      function shuffle(array) {
-        var random = array.map(Math.random);
-        array.sort(function(a, b) {
-          return random[a] - random[b];
-        });
-      }
-
-      function performPlacement(pieces, chunks, stats, placed, margin, current, cb) {
-         // general algo is using the guillotine fit
-         // http://clb.demon.fi/files/RectangleBinPack.pdf
-         if(stats.stop) return;
-         if(pieces.length==0) {
-           addCnt(stats, current);
-           if(!stats.bestmargin || stats.bestmargin>margin) {
-             stats.bestmargin = margin;
-             stats.placement = placed;
-             stats.chunks=chunks;
-             console.log("Found solution:",placed,stats.bestmargin);
-             cb(chunks, placed);
-           }
-           return;
-         }
-
-         var previous={};
-         for(var p=0;p<pieces.length;p++) {
-           var piece=pieces[p];
-           if(previous && piece.w == previous.w && piece.h == previous.h) {
-            console.log("duplicate case");
-            continue; // already tested, duplicate piece.
-           }
-           previous=piece;
-           var r=cloneArray(pieces);
-           r.splice(p,1);
-           var hasFitted=false;
-           // find best chunk           
-           for(var c=0;c<chunks.length;c++){
-             var chunk=chunks[c];
-             if(piece.w<=chunk.w && piece.h<=chunk.h) {
-               hasFitted=true;
-               piece.x=chunk.x;
-               piece.y=chunk.y;
-               var newmargin;
-               if(stats.d=="y")
-                 newmargin=Math.max(margin, piece.y+piece.h);
-               else
-                 newmargin=Math.max(margin, piece.x+piece.w);
-               if(stats.bestmargin != undefined && newmargin>=stats.bestmargin) 
-                  continue; // no need to continue
-
-               var placed2 = cloneArray(placed);
-               placed2.push(_.clone(piece));
-               // the piece fits
-               var newchunks = cloneArray(chunks);
-               newchunks.splice(c,1);
-
-               // remaining chunks
-               var r1=[{x:chunk.x+piece.w,y:chunk.y,w:chunk.w-piece.w,h:chunk.h},
-                   {x:chunk.x,y:chunk.y+piece.h,w:piece.w,h:chunk.h-piece.h}];
-               var r2=[{x:chunk.x+piece.w,y:chunk.y,w:chunk.w-piece.w,h:piece.h},
-                   {x:chunk.x,y:chunk.y+piece.h,w:chunk.w,h:chunk.h-piece.h}];
-
-               var nc= newchunks.concat(r1);
-               performPlacement(r,nc,stats, placed2, newmargin, current+"-"+piece.id+"("+nc.length+")",cb); 
-               nc= newchunks.concat(r2);
-               performPlacement(r,nc,stats, placed2, newmargin, current+"-"+piece.id+"("+nc.length+")",cb); 
-             }
-           }
-           if(!hasFitted) {
-             //console.warn("Could not fit piece",piece.n,"in chunks");
-             addCnt(stats, current);
-             return;
-           }
-         }
-      }
-    }
-    </script>
+    <link rel="stylesheet" type="text/css" media="all" href="style.css">
+    
   </head>
   <body class="enyo-unselectable">
-  <button onclick="run();">Do it</button>
+  <div class="form">
+  <p class="form-title">Parametres</p>
+  <p class="form-field"  > 
+    <span class="form-item">Largeur</span><input ng-change="changeConfig()" ng-model="config.width" type="number" style="text-align:right;width:50px;" id="width" value="62"/> <br>
+    <span class="form-item">Hauteur</span><input ng-change="changeConfig()" ng-model="config.height" type="number" style="text-align:right;width:50px;" id="height" value="260"/> <br>
+    <span class="form-item">Direction</span><select ng-change="changeConfig()" ng-model="config.direction" id="direction"> <option value="w">Largeur</option><option value="h">Hauteur</option></select> <br>
+    <span class="form-item">Unites</span><select ng-change="changeConfig()" ng-model="config.units" id="units"> <option value="i">Impérialles</option><option value="m">Métriques</option></select> <br>
+    <span class="form-item">Snap</span><input  ng-change="changeConfig()" ng-model="config.snap" type="checkbox">Snapper aux coins</input> <br>
+    <span class="form-item">Zoom</span><select ng-change="changeConfig()" ng-model="config.zoom" > 
+      <option value="1">100%</option>
+      <option value="2">200%</option>
+      <option value="0.5">50%</option>
+      <option value="0.25">25%</option>
+      <option value="Fit">Tout</option>
+    </select> 
+  </p>
+  <p > 
+    <label class="form-item">Pieces</label> 
+    <button ng-click="addPiece()">+</button>
+  <table >
+    <thead><th>Nom</th><th>Largeur</th><th>Hauteur</th><th>Nombre</th><th/><thead>
+    <tr ng-repeat="piece in pieces">
+    <td><input style="width:50px" ng-change="changePiece()" ng-model="piece.name"</td>
+    <td><input style="width:50px" ng-change="changePiece()"  ng-model="piece.width"</td>
+    <td><input style="width:50px" ng-change="changePiece()" ng-model="piece.height"</td>
+    <td><input style="width:50px" ng-change="changePiece()" ng-model="piece.count"</td>
+    <td><button  ng-click="removePiece($index)">-</button></td>
+    </tr> 
+  </table>
+  <button ng-click="placeAll()";">Dessiner le Plan de coupe</button>
+  </div>
+  <h1>Plan de coupe {{config.width}}x{{config.height}}</h1>
   <div id="div1" style="border-style: solid; width: 900px; height: 500px; overflow: auto;">
     <canvas id="canvas" width="900" height="500">*** THIS BROWSER DOES NOT SUPPORT THE CANVAS ELEMENT ***</canvas>
   </div>
+  <button onclick="showAsImage()">Ouvrir comme une image</button>
   </body>
 </html>

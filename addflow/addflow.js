@@ -5097,8 +5097,10 @@ var Lassalle = {
         function hx(e) {
             var x, y, rect;
             rect = canvas.getBoundingClientRect();
-            x = e.clientX - rect.left;
-            y = e.clientY - rect.top;
+            var cx = e.clientX || e.touches[0].clientX;
+            var cy = e.clientY || e.touches[0].clientY;
+            x = cx - rect.left;
+            y = cy - rect.top;
             x += na.xCustomOffset;
             y += na.yCustomOffset;
             return {
