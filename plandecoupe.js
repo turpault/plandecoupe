@@ -55,76 +55,43 @@ app.controller('Config', function($scope) {
 });
 
 function initDrawing(PdC) {
-  var canvas = document.getElementById('canvas');
-  var f = window.f = new Lassalle.Flow(canvas);
-  // Create the PlanDeCoupe shape
-  f.nodeModel.shapeFamily = "rectangle";
-  f.gridDraw = true;
-  f.gridSnap = false;
-  f.gridSizeX = 10;
-  f.gridSizeY = 10;
-  f.canDrawLink = false;
-  f.canSizeNode = false;
-  f.canDrawNode = false;
-  f.nodeModel.textLineHeight=12;
-  f.handleSize=0;
-  document.addEventListener("selectionChange", function(e) {
-    if(e.item && f.isNode(e.item))
-      if(e.item.isPiece) {
-        //f.bringToFront();
-        f.selectedNode=e.item;
-      } else {
-        //f.sendToBack();
-        f.selectedNode=undefined;        
-      }
-  }, false);
-  canvas.addEventListener("dblclick", function(e) {
-    if(f.selectedNode) {
-      f.selectedNode.lock = !f.selectedNode.lock;
-      updatePieces(PdC.pieces);
-    }
-  });
-  canvas.addEventListener("mouseup", function(e) {
-    setTimeout(function() {
-      if(PdC.config.snap)
-        snap(PdC,f.selectedNode);
-
-    },200);
-  });
-  canvas.addEventListener("touchend", function(e) {
-    setTimeout(function() {
-      if(PdC.config.snap)
-        snap(PdC,f.selectedNode);
-
-    },200);
-  });
+  var container = window.container = document.getElementById('container');
 } 
 
+function createDraggableDiv(x,y,w,h,t) {
+  var d = document.createElement("div");
+  container.appendChild(d);
+  d.setWidth = function(w) { d.style.width=""+w+"px";};
+  d.setHeight = function(h) { d.style.height=""+h+"px";};
+  d.setLeft = function(l) { d.style.left=""+l+"px";};
+  d.setTop = function(t) { d.style.top=""+t+"px";};
+  d.setText = function(t) { d.innerText = t;};
+  d.setBackground = function(color) { d.style.background =color;};
+
+  d.setLeft(x||10);
+  d.setTop(y||10);
+  d.setWidth(w||100);
+  d.setHeight(h||100);
+  $(d).draggable();
+  return d;
+}
+
+
 function updateConfig(config) {
-  /*if(!config.view) {
-    config.view = f.addNode(offset, offset, config.width*mult,config.height*mult);
-    config.view.isSelectable=false;
-    config.view.isXMoveable=false;
-    config.view.isYMoveable=false;
-
-    config.view.fillStyle = "rgba(10,10,40,0.1)";
-    config.view.gradientFillStyle = "rgba(40,10,10,0.1)";
-
+  if(!config.view) {    
+    config.view = createDraggableDiv(10,10,config.width*mult, config.height*mult);
   } else {
     config.view.setWidth(config.width*mult);
     config.view.setHeight(config.height*mult);
-  }*/
+  }
   config.view={x:offset, y:offset, w:config.width*mult, h:config.height*mult};
-  f.addNode(offset, offset, config.width*mult,0);
-  f.addNode(offset, offset, 0,config.height*mult);
-  f.addNode(offset+config.width*mult, offset, 0, config.height*mult);
-  f.addNode(offset, offset+config.height*mult, config.width*mult,0);
+  /*
   if(config.zoom == "Fit") {
     f.zoomRectangle(0, 0, f.getXExtent(), f.getYExtent());
   }
   else 
     f.zoom = parseFloat(config.zoom);
-  f.refresh();
+    */
 }
 
 function snap(PdC, node) {
@@ -215,6 +182,7 @@ function updatePieces(pieces) {
 function updatePiece(p) {
     p.view = p.view || [];
     // remove extra items
+    return;
     f.beginUpdate();
     var extranodes = p.view.splice(p.count);
     extranodes.forEach(function(n) { n.flow.removeNode(n);});

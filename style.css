@@ -213,3 +213,12 @@ td:nth-child(3) { background: hsl(170, 70%, 50%); }
 td:nth-child(4) { background: hsl(180, 80%, 50%); }
 td:nth-child(5) { background: hsl(190, 90%, 50%); }
 td:nth-child(6) { background: hsl(200, 99%, 50%); }
+
+.draggable
+{
+    display: inline-block;
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border: 1px solid black;
+}

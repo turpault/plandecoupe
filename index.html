@@ -5,7 +5,9 @@
     <!-- -->
     <meta http-equiv="Content-Type" content="text/html; charset=utf8"/>
     <!-- js -->
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+  <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+  <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
     <script src="addflow/addflow.js" charset="utf-8"></script>
     <script src="plandecoupe.js"></script>
     <script src="fit.js"></script>
@@ -48,8 +50,7 @@
   <button ng-click="placeAll()";">Dessiner le Plan de coupe</button>
   </div>
   <h1>Plan de coupe {{config.width}}x{{config.height}}</h1>
-  <div id="div1" style="border-style: solid; width: 900px; height: 500px; overflow: auto;">
-    <canvas id="canvas" width="900" height="500">*** THIS BROWSER DOES NOT SUPPORT THE CANVAS ELEMENT ***</canvas>
+  <div id="container" style="border-style: solid; width: 900px; height: 500px; overflow: auto;">
   </div>
   <button onclick="showAsImage()">Ouvrir comme une image</button>
   </body>
