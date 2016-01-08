@@ -6,21 +6,22 @@ function fit(PdC) {
       views.push(view);
     });
   });
-  views.forEach(function(v) { v.placed = false;});
+  views.forEach(function(v) { v.placed = false; v.updatePos();});
   var placed = views.filter(function(v) { return v.lock;});
   placed.forEach(function(v) { v.placed = true;});
   var remaining = views.length-placed.length;
   var d={
-    "w":"h",
-    "h":"w"
+    "w":"height",
+    "h":"width"
   }[PdC.config.direction];
 
   while(remaining!=0) {
     var t = treeline(placed, PdC.config), spot;
+    var candidate;
     for(var i = 0;i<t.length; i++) {
       // find best remaining piece fitting this spot
       spot = t[i];
-      var candidate=undefined, remain=1e30;
+      candidate=undefined, remain=1e30;
       views.forEach(function(v) {
         if(!v.placed && v[d]<=spot.size) {
           var rem = spot.size - v[d];
@@ -30,58 +31,67 @@ function fit(PdC) {
         }
       });
       if(candidate) {
-        console.log("Placing ",candidate.text,"to",spot.left,"x",spot.top);
-        candidate.setLeft(spot.left);
-        candidate.setTop(spot.top);
+        if(PdC.config.direction=="h") {
+          candidate.setLeft(spot.min);
+          candidate.setTop(spot.level);
+        } else {
+          candidate.setLeft(spot.level);
+          candidate.setTop(spot.min);          
+        }
+        console.log("Placing ",candidate.innerText,"to",spot);
         candidate.placed=true;
         placed.push(candidate);
         remaining--;
         break;
-      }
+      } 
+    }
+    if(!candidate) {
+      // no piece placed with the current treeline, that's bad
+      console.warn("Could not place remaining pieces");
+      break;
     }
   }
-  f.refresh();
 }
 
 function treeline(views, config) {
   views.forEach(function(v) {
-    v.left=v.x;
-    v.top = v.y;
-    v.right=v.x+v.w;
-    v.bottom = v.y+v.h;
+    v.updatePos();
   });
 
-  var spots=config.direction=="h" ?
-    [{left:config.view.x, right:config.view.y+config.view.w, top:config.view.y, size:config.view.w}]:[];
+  config.view.updatePos();
+  var spots=config.direction =="h" ?
+    [{min:config.view.left, max:config.view.left+config.view.width, level:config.view.top, size:config.view.width}]:
+    [{min:config.view.top, max:config.view.bottom, level:config.view.left, size:config.view.height}];
   views.forEach(function(v) {
-    if(config.direction=="h") {
-      var newspots=[];
-      for(var s=0;s<spots.length;s++) {
-        var spot=spots[s];
-        if(spot.top>v.bottom) {newspots.push(spot); continue;} // spot is below anyway
-        if(spot.left>=v.right || spot.right <=v.left) {newspots.push(spot); continue;} // not affected
-        if(spot.left<v.left) {
-          newspots.push({left:spot.left, top:spot.top, right:v.left, size:v.left-spot.left});
-        } 
-        if(spot.right>v.right) {
-          newspots.push({left:v.right, top:spot.top, right:spot.right, size:spot.right-v.right});
-        }
-        var ns = {left:Math.max(v.left, spot.left), top:v.bottom, right:Math.min(v.right, spot.right)};
-        ns.size=ns.right-ns.left;
-        newspots.push(ns);
-      }
-      spots=newspots;
+    var min="left", max="right", level="bottom"; 
+    if(config.direction=="h") { 
     } else {
-      // todo
+       min="top"; max="bottom"; level="right"; 
     }
+    var newspots=[];
+    for(var s=0;s<spots.length;s++) {
+      var spot=spots[s];
+      if(spot.level>v[level]) {newspots.push(spot); continue;} // spot is below anyway
+      if(spot.min>=v[max] || spot.max <=v[min]) {newspots.push(spot); continue;} // not affected
+      if(spot.min<v[min]) {
+        newspots.push({min:spot.min, level:spot.level, max:v[min], size:v[min]-spot.min});
+      } 
+      if(spot.max>v[max]) {
+        newspots.push({min:v[max], level:spot.level, max:spot.max, size:spot.max-v[max]});
+      }
+      var ns = {min:Math.max(v[min], spot.min), level:v[level], max:Math.min(v[max], spot.max)};
+      ns.size=ns.max-ns.min;
+      newspots.push(ns);
+    }
+    spots=newspots;
   });
   // merge similar sports (same top)
-  spots.sort(function(a,b) { return a.left-b.left;});
+  spots.sort(function(a,b) { return a.min-b.min;});
   var merged = [], s=1, prev=spots[0];
   while(s<spots.length) {
     var n=spots[s];
-    if(n.top==prev.top) {
-      prev.right=n.right;
+    if(n.level==prev.level) {
+      prev.max=n.max;
       prev.size+=n.size;
     } else {
       merged.push(prev);
@@ -91,9 +101,12 @@ function treeline(views, config) {
   }
   merged.push(prev);
   spots=merged;
-  spots.sort(function(a,b) { return a.top-b.top});
+  spots.sort(function(a,b) { return a.level-b.level});  
   var mx= 0;spots.forEach(function(s){ mx+=s.size;});
   console.log("Spots width:", mx);
+
+  // spots at the level x can be merged with all the contiguous previous level spots
+  // Still a todo
   return spots;
 }
 

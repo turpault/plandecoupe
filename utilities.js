@@ -1,3 +1,15 @@
+function showAsImage() {
+  var c=document.getElementById("container");
+  $(c).scrollTop(0);
+  $(c).scrollLeft(0);
+  html2canvas(c, {width:c.scrollWidth, height:c.scrollHeight}).then(function(canvas) {
+    var d=canvas.toDataURL("image/png");
+    window.open(d);
+    //var w=window.open('about:blank','image from canvas');
+    //w.document.write("<img src='"+d+"' alt='from canvas'/>");      
+  });
+}
+
 /*
 function log(txt) {
   var r = document.createElement("p");
@@ -193,12 +205,7 @@ function run() {
      }                  
   }
 }
-function showAsImage() {
-  var c=document.getElementById("canvas");
-  var d=c.toDataURL("image/png");
-  var w=window.open('about:blank','image from canvas');
-  w.document.write("<img src='"+d+"' alt='from canvas'/>");      
-}
+
 function removeRow() {
 
 }

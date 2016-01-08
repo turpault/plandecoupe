@@ -222,3 +222,27 @@ td:nth-child(6) { background: hsl(200, 99%, 50%); }
     height: 100px;
     border: 1px solid black;
 }
+
+.piece {
+  /* border:1px solid black; */
+  background: linear-gradient(135deg, rgba(30,187,153,0.7) 0%,rgba(219,221,231,0.7) 100%);
+  text-align:center;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+}
+
+.piece > div {
+  pointer-events:none;
+  position:absolute;
+  word-break: break-all;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+@media only print {
+  .hideOnPrint {
+    visibility:hidden;
+  }
+}
