@@ -21,7 +21,7 @@
     
   </head>
   <body class="enyo-unselectable">
-  <div class="form hideOnPrint" style="width:350px;float:left;">
+  <div><div class="form" >
     <p class="form-title">Nom du plan</p>
     <p class="form-field"  > 
       <span class="form-item">Charger</span>
@@ -51,25 +51,28 @@
         <option value="Fit">Tout</option>
       </select> 
     </p>
+  </div>
+  <div class="form" style="width:300px;">
     <p class="form-title">Pièces à placer</p>
     <div class="form-field"> 
       <table class="form-item" >
         <thead><th>Nom</th><th>Largeur</th><th>Hauteur</th><th>Nb</th><th/><thead>
         <tr ng-repeat="piece in pieces">
-        <td><input style="width:50px" ng-change="changePiece()" ng-model="piece.name"</td>
-        <td><input style="width:50px" type="number" ng-change="changePiece()"  ng-model="piece.width"</td>
-        <td><input style="width:50px" type="number" ng-change="changePiece()" ng-model="piece.height"</td>
+        <td><input style="width:80px" ng-change="changePiece()" ng-model="piece.name"</td>
+        <td><input style="width:30px" type="number" ng-change="changePiece()"  ng-model="piece.width"</td>
+        <td><input style="width:30px" type="number" ng-change="changePiece()" ng-model="piece.height"</td>
         <td><input style="width:20px" type="number" ng-change="changePiece()" ng-model="piece.count"</td>
-        <td><button  ng-click="removePiece($index)">-</button></td>
+        <td><button style="width:10px;padding:0;" ng-click="removePiece($index)">-</button></td>
         </tr> 
       </table>
       <button class="form-item" ng-click="addPiece()">+</button>
       <button ng-click="placeAll()">Dessiner le Plan de coupe</button>
     </div>
-      <button onclick="showAsImage()">Sous forme d'image</button>
-  </div>
-  <div style="width:auto">
-    <h1 class="hideOnPrint">Plan de coupe {{config.width}}x{{config.height}}</h1>
+    <button onclick="showAsImage()">Sous forme d'image</button>
+  </div></div>
+  <br/>
+  <div style="width:100%">
+    <h1>Plan de coupe {{config.width}}x{{config.height}}</h1>
     <div id="container">
     </div>
   </div>

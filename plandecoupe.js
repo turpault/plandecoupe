@@ -147,7 +147,9 @@ function createDiv(x,y,w,h,t) {
   d.setLeft = function(l) { d.style.left=""+l+"px";};
   d.setTop = function(t) { d.style.top=""+t+"px";};
   d.setText = function(t) { d.innerText=t;};
-  d.setBackground = function(color) { d.style.background =color;};
+  d.setBackground = function(color) { 
+    d.style.background =color;
+  };
   d.updatePos = function() { 
     var jq= $(d), 
       p=jq.position(), 
@@ -180,11 +182,11 @@ function createPiece(x,y,w,h,t) {
 
 function setInnerHtml(d,p) {
   d.innerHTML = ''+
-  '<div style="left:0;right:0;top:10px;line-height:initial;">'+p.width+'</div>'+
-  '<div style="left:0;right:0;bottom:10px;line-height:initial">'+p.width+'</div>'+
-  '<div style="left:10px;top:0;bottom:0">'+p.height+'</div>'+
-  '<div style="right:10px;top:0;bottom:0">'+p.height+'</div>'+
-  '<div style="right:0;left:0;top:0;bottom:0;font-weight:bold;">'+d.text+'</div>';   
+//'<div style="left:0;right:0;top:10px;line-height:initial;">'+p.width+'</div>'+
+  '<div class="bottom">'+p.width+'</div>'+
+//'<div style="left:10px;top:0;bottom:0">'+p.height+'</div>'+
+  '<div class="right">'+p.height+'</div>'+
+  '<div class="content">'+d.text+'</div>';   
 }
 
 
@@ -195,15 +197,21 @@ function updateConfig(config, pieces) {
   } 
 
   if(config.zoom != config.oldzoom) {
+    var oldmult = mult;
     if(config.zoom == "Fit") {
       var hratio = $(container).width()/$(container)[0].scrollWidth;
       var vratio = $(container).height()/$(container)[0].scrollHeight;
       mult=10*Math.min(hratio,vratio);
     }
-    else    
+    else {    
       mult = 10*parseFloat(config.zoom);
+    }
+
+    // calculate oldzoom-newzoom ratio
+    var growFactor =  oldmult?mult/oldmult:1;
+
     config.oldzoom= config.zoom;
-    updatePieces(pieces);
+    updatePieces(pieces, {growFactor:growFactor});
   }
   // flip width/height depending on direction
   config.view.setWidth(config.direction=="h"?config.width*mult:config.height*mult);
@@ -286,12 +294,9 @@ function snap(PdC, node) {
     console.log("Snapped item ",s.text,"to",s.left,"x", s.top);
   }  
 }
-function updatePieces(pieces) {
+function updatePieces(pieces, options) {
   // enumerate pieces
-  pieces.forEach(updatePiece);
-}
-
-function updatePiece(p) {
+  pieces.forEach(function updatePiece(p) {
     p.view = p.view || [];
     // remove extra items
     var extranodes = p.view.splice(p.count);
@@ -310,17 +315,24 @@ function updatePiece(p) {
     }
     // update properties
     p.view.forEach(function(n, idx) {
+      if(options && options.growFactor) {
+        n.updatePos();
+        n.setLeft(n.left*options.growFactor);
+        n.setTop(n.top*options.growFactor);
+      }
+
       n.setWidth(p.width*mult);
       n.setHeight(p.height*mult);
-      n.text=p.name+(p.view.length>1?("("+idx+")"):"");      
+      n.text=p.name+(p.view.length>1?("("+(1+idx)+")"):"");      
       n.isPiece = true;
       setInnerHtml(n,p);
       if(n.lock) {
-        n.setBackground("rgba(200,29,40,0.2)");
+        n.setBackground("linear-gradient(135deg, rgba(200,29,40,0.5) 0%,rgba(219,21,31,0.2) 100%)");
       } else {
         n.setBackground("");
       }
     });
+  });
 }
 
 
