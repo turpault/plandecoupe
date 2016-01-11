@@ -57,8 +57,8 @@
    text-shadow: #fdf2e4 0 1px 0;
    }
 .button-container {
-   margin:8px 0;
-   text-align:right;
+  margin:8px 0;
+  text-align:right;
    }
 upload-button,button {
    border: 1px solid #447314;
@@ -239,6 +239,13 @@ td:nth-child(6) { background: hsl(200, 99%, 50%); }
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
+}
+
+#container {
+  position:relative; 
+  overflow: auto;
+  transform-origin:top left;
+  min-height:100%;
 }
 
 @media only print {
