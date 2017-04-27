@@ -1,5 +1,7 @@
 var app = angular.module('plandecoupe', []);
 
+Raven.config('https://6932268a5e5049fe87a9f7479b5369a6@sentry.io/162361').install()
+
 var offset=10;
 var mult=10;
 
